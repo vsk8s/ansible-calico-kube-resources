@@ -1,0 +1,248 @@
+---
+- name: Deploy ConfigMap
+  local_action:
+    module:  k8s
+    state: present
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: calico-config
+        namespace: kube-system
+      data:
+        typha_service_name: "calico-typha"
+        calico_backend: "bird"
+        veth_mtu: "1440"
+
+        cni_network_config: |-
+          {
+            "name": "k8s-pod-network",
+            "cniVersion": "0.3.0",
+            "plugins": [
+              {
+                "type": "calico",
+                "log_level": "info",
+                "datastore_type": "kubernetes",
+                "nodename": "__KUBERNETES_NODE_NAME__",
+                "mtu": __CNI_MTU__,
+                "ipam": {
+                  "type": "host-local",
+                  "subnet": "usePodCidr"
+                },
+                "policy": {
+                    "type": "k8s"
+                },
+                "kubernetes": {
+                    "kubeconfig": "__KUBECONFIG_FILEPATH__"
+                }
+              },
+              {
+                "type": "portmap",
+                "snat": true,
+                "capabilities": {"portMappings": true}
+              }
+            ]
+          }
+
+- name: Deploy Pod Disruption Budget
+  local_action:
+    module:  k8s
+    state: present
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      apiVersion: policy/v1beta1
+      kind: PodDisruptionBudget
+      metadata:
+        name: calico-typha
+        namespace: kube-system
+        labels:
+          k8s-app: calico-typha
+      spec:
+        maxUnavailable: 1
+        selector:
+          matchLabels:
+            k8s-app: calico-typha
+
+- name: Deploy ServiceAccount
+  local_action:
+    module:  k8s
+    state: present
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: calico-node
+        namespace: kube-system
+
+- name: Deploy Custom resource definitions
+  local_action:
+    module:  k8s
+    state: present
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      apiVersion: apiextensions.k8s.io/v1beta1
+      kind: CustomResourceDefinition
+      metadata:
+         name: "{{ item.plural }}.crd.projectcalico.org"
+      spec:
+        scope: "{{ item.scope | default('Cluster') }}"
+        group: crd.projectcalico.org
+        version: v1
+        names:
+          kind: "{{ item.kind }}"
+          plural: "{{ item.plural }}"
+          singular: "{{ item.singular }}"
+  with_items:
+    - kind: FelixConfiguration
+      singular: felixconfiguration
+      plural: felixconfiguration
+    - kind: BGPPeer
+      singular: bgppeer
+      plural: bgpppeers
+    - kind: BGPConfiguration
+      singular: bgpconfiguration
+      plural: bgpconfigurations
+    - kind: IPPool
+      singular: ippool
+      plural: ippools
+    - kind: HostEndpoint
+      singular: hostendpoint
+      plural: hostendpoints
+    - kind: ClusterInformation
+      singular: clusterinformation
+      plural: clusterinformations
+    - kind: GlobalNetworkPolicy
+      singular: globalnetworkpolicy
+      plural: globalnetworkpolicies
+    - kind: GlobalNetworkSet
+      singular: globalnetworkset
+      plural: globalnetworksets
+    - kind: NetworkPolicy
+      singular: networkpolicy
+      plural: networkpolicies
+      scope: Namespaced
+
+- name: Deploy Cluster role
+  local_action:
+    module:  k8s
+    state: present
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      kind: ClusterRole
+      apiVersion: rbac.authorization.k8s.io/v1beta1
+      metadata:
+        name: calico-node
+      rules:
+        # The CNI plugin needs to get pods, nodes, and namespaces.
+        - apiGroups: [""]
+          resources:
+            - pods
+            - nodes
+            - namespaces
+          verbs:
+            - get
+        - apiGroups: [""]
+          resources:
+            - endpoints
+            - services
+          verbs:
+            # Used to discover service IPs for advertisement.
+            - watch
+            - list
+            # Used to discover Typhas.
+            - get
+        - apiGroups: [""]
+          resources:
+            - nodes/status
+          verbs:
+            # Needed for clearing NodeNetworkUnavailable flag.
+            - patch
+            # Calico stores some configuration information in node annotations.
+            - update
+        # Watch for changes to Kubernetes NetworkPolicies.
+        - apiGroups: ["networking.k8s.io"]
+          resources:
+            - networkpolicies
+          verbs:
+            - watch
+            - list
+        # Used by Calico for policy information.
+        - apiGroups: [""]
+          resources:
+            - pods
+            - namespaces
+            - serviceaccounts
+          verbs:
+            - list
+            - watch
+        # The CNI plugin patches pods/status.
+        - apiGroups: [""]
+          resources:
+            - pods/status
+          verbs:
+            - patch
+        # Calico monitors various CRDs for config.
+        - apiGroups: ["crd.projectcalico.org"]
+          resources:
+            - globalfelixconfigs
+            - felixconfigurations
+            - bgppeers
+            - globalbgpconfigs
+            - bgpconfigurations
+            - ippools
+            - globalnetworkpolicies
+            - globalnetworksets
+            - networkpolicies
+            - clusterinformations
+            - hostendpoints
+          verbs:
+            - get
+            - list
+            - watch
+        # Calico must create and update some CRDs on startup.
+        - apiGroups: ["crd.projectcalico.org"]
+          resources:
+            - ippools
+            - felixconfigurations
+            - clusterinformations
+          verbs:
+            - create
+            - update
+        # Calico stores some configuration information on the node.
+        - apiGroups: [""]
+          resources:
+            - nodes
+          verbs:
+            - get
+            - list
+            - watch
+        # These permissions are only requried for upgrade from v2.6, and can
+        # be removed after upgrade or on fresh installations.
+        - apiGroups: ["crd.projectcalico.org"]
+          resources:
+            - bgpconfigurations
+            - bgppeers
+          verbs:
+            - create
+            - update
+
+- name: Deploy Cluster Role Binding
+  local_action:
+    module:  k8s
+    state: present
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1beta1
+      kind: ClusterRoleBinding
+      metadata:
+        name: calico-node
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: calico-node
+      subjects:
+      - kind: ServiceAccount
+        name: calico-node
+        namespace: kube-system

@@ -2,7 +2,7 @@
 - name: Deploy ConfigMap
   local_action:
     module:  k8s
-    state: present
+    state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
       kind: ConfigMap
@@ -48,7 +48,7 @@
 - name: Deploy Pod Disruption Budget
   local_action:
     module:  k8s
-    state: present
+    state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
       apiVersion: policy/v1beta1
@@ -67,7 +67,7 @@
 - name: Deploy ServiceAccount
   local_action:
     module:  k8s
-    state: present
+    state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
       apiVersion: v1
@@ -79,7 +79,7 @@
 - name: Deploy Custom resource definitions
   local_action:
     module:  k8s
-    state: present
+    state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
       apiVersion: apiextensions.k8s.io/v1beta1
@@ -127,7 +127,7 @@
 - name: Deploy Cluster role
   local_action:
     module:  k8s
-    state: present
+    state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
       kind: ClusterRole
@@ -231,7 +231,7 @@
 - name: Deploy Cluster Role Binding
   local_action:
     module:  k8s
-    state: present
+    state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
       apiVersion: rbac.authorization.k8s.io/v1beta1

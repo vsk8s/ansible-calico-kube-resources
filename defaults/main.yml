@@ -1,3 +1,4 @@
 ---
 
 calico_kube_resources_kubeconfig: "~/.kube/config"
+calico_kube_resources_state: "present"

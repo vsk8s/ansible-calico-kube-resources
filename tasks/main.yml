@@ -246,3 +246,31 @@
       - kind: ServiceAccount
         name: calico-node
         namespace: kube-system
+
+- name: Deploy Typha service
+  local_action:
+    module: k8s
+    state: "{{ calico_kube_resources_state }}"
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: calico-typha
+        namespace: kube-system
+        labels:
+          k8s-app: calico-typha
+      spec:
+        type: ClusterIP
+        ports:
+          - port: 5473
+            protocol: TCP
+            targetPort: 5473
+            name: calico-typha
+
+- name: Deploy Typha service endpoints
+  local_action:
+    module: k8s
+    state: "{{ calico_kube_resources_state }}"
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition: "{{ lookup('template', 'typha-service-endpoints.yml.j2') }}"

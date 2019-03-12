@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: calico-typha
+  namespace: kube-system
+  labels:
+    k8s-app: calico-typha
+subsets:
+  - addresses:
+{% for item in groups[calico_kube_resources_typha_group] %}
+    - ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+{% endfor %}
+    ports:
+      - port: 5473
+        name: calico-typha

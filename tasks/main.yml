@@ -97,10 +97,10 @@
   with_items:
     - kind: FelixConfiguration
       singular: felixconfiguration
-      plural: felixconfiguration
+      plural: felixconfigurations
     - kind: BGPPeer
       singular: bgppeer
-      plural: bgpppeers
+      plural: bgppeers
     - kind: BGPConfiguration
       singular: bgpconfiguration
       plural: bgpconfigurations

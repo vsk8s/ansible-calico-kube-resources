@@ -246,6 +246,9 @@
       - kind: ServiceAccount
         name: calico-node
         namespace: kube-system
+      - kind: User
+        name: calico-node
+        namespace: kube-system
 
 - name: Deploy Typha service
   local_action:

@@ -1,5 +1,6 @@
 ---
 
+kubernetes_autonomous_system_number: 64512
 kubernetes_ansible_master_group: "changeme"
 
 calico_kube_resources_kubeconfig: "~/.kube/config"

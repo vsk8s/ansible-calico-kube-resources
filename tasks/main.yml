@@ -224,5 +224,5 @@
         name: "{{ hostvars[item]['ansible_hostname'] }}"
       spec:
         peerIP: "{{ hostvars[item][calico_kube_resources_router_interface]['ipv4']['address'] }}"
-        asNumber: 64512 #TODO: Make this configurable for calico itsself and this resource
+        asNumber: "{{ kubernetes_autonomous_system_number }}"
   with_items: "{{ groups[calico_kube_resources_router_group] }}"

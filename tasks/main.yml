@@ -226,3 +226,16 @@
         peerIP: "{{ hostvars[item][calico_kube_resources_router_interface]['ipv4']['address'] }}"
         asNumber: "{{ kubernetes_autonomous_system_number }}"
   with_items: "{{ groups[calico_kube_resources_router_group] }}"
+
+- name: Add default BGP configuration
+  local_action:
+    module: k8s
+    state: "{{ calico_kube_resources_state }}"
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      kind: BGPConfiguration
+      metadata:
+        name: default
+      spec:
+        nodeToNodeMeshEnabled: false
+

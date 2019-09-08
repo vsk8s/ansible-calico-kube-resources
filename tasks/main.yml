@@ -58,6 +58,21 @@
       singular: networkpolicy
       plural: networkpolicies
       scope: Namespaced
+    - kind: IPAMBlock
+      plural: ipamblocks
+      singular: ipamblock
+    - kind: BlockAffinity
+      plural: blockaffinities
+      singular: blockaffinity
+    - kind: IPAMHandle
+      plural: ipamhandles
+      singular: ipamhandle
+    - kind: IPAMConfig
+      plural: ipamconfigs
+      singular: ipamconfig
+    - kind: NetworkSet
+      plural: networksets
+      singular: networkset
 
 - name: Deploy Cluster role
   local_action:
@@ -127,9 +142,11 @@
             - globalbgpconfigs
             - bgpconfigurations
             - ippools
+            - ipamblocks
             - globalnetworkpolicies
             - globalnetworksets
             - networkpolicies
+            - networksets
             - clusterinformations
             - hostendpoints
           verbs:
@@ -162,6 +179,28 @@
           verbs:
             - create
             - update
+        - apiGroups: ["crd.projectcalico.org"]
+          resources:
+            - blockaffinities
+            - ipamblocks
+            - ipamhandles
+          verbs:
+            - get
+            - list
+            - create
+            - update
+            - delete
+        - apiGroups: ["crd.projectcalico.org"]
+          resources:
+            - ipamconfigs
+          verbs:
+            - get
+        # Block affinities must also be watchable by confd for route aggregation.
+        - apiGroups: ["crd.projectcalico.org"]
+          resources:
+            - blockaffinities
+          verbs:
+            - watch
 
 - name: Deploy Cluster Role Binding
   local_action:

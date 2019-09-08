@@ -277,4 +277,4 @@
         name: default
       spec:
         nodeToNodeMeshEnabled: false
-
+        asNumber: "{{ kubernetes_autonomous_system_number }}"

@@ -225,7 +225,7 @@
       spec:
         peerIP: "{{ hostvars[item][calico_kube_resources_router_interface]['ipv4']['address'] }}"
         asNumber: "{{ kubernetes_autonomous_system_number }}"
-  with_items: "{{ groups[calico_kube_resources_router_group] }}"
+  with_items: "{{ groups[kubernetes_ansible_router_group] }}"
 
 - name: Add default BGP configuration
   local_action:

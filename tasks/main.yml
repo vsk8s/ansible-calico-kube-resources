@@ -245,6 +245,26 @@
             targetPort: 5473
             name: calico-typha
 
+- name: Create K8S Master node dummy objects
+  local_action:
+    module: k8s
+    state: "{{ calico_kube_resources_state }}"
+    kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        labels:
+          beta.kubernetes.io/arch: amd64
+          beta.kubernetes.io/os: linux
+          kubernetes.io/arch: amd64
+          kubernetes.io/hostname: "{{ item }}"
+          kubernetes.io/os: linux
+        name: "{{ item }}"
+      spec:
+        podCIDR: "{{ calico_kube_resources_master_dummy_subnet }}"
+  with_items: "{{ groups[kubernetes_ansible_master_group] }}"
+
 - name: Deploy Typha service endpoints
   local_action:
     module: k8s

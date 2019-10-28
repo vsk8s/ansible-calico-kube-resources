@@ -258,9 +258,9 @@
           beta.kubernetes.io/arch: amd64
           beta.kubernetes.io/os: linux
           kubernetes.io/arch: amd64
-          kubernetes.io/hostname: "{{ item }}"
+          kubernetes.io/hostname: "{{ hostvars[item].ansible_fqdn }}"
           kubernetes.io/os: linux
-        name: "{{ item }}"
+        name: "{{ hostvars[item].ansible_fqdn }}"
       spec:
         podCIDR: "{{ calico_kube_resources_master_dummy_subnet }}"
   with_items: "{{ groups[kubernetes_ansible_master_group] }}"

@@ -7,6 +7,13 @@
   with_items:
     - "{{ groups[kubernetes_ansible_master_group] }}"
 
+- name: Gather router facts
+  setup:
+  delegate_to: "{{ item }}"
+  delegate_facts: True
+  with_items:
+    - "{{ groups[kubernetes_ansible_router_group] }}"
+
 - name: Deploy ServiceAccount
   local_action:
     module:  k8s

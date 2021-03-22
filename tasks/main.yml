@@ -312,4 +312,6 @@
         name: default
       spec:
         nodeToNodeMeshEnabled: false
+        serviceClusterIPs:
+          - cidr: "{{ kubernetes_service_cidr }}"
         asNumber: "{{ kubernetes_autonomous_system_number }}"

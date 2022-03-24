@@ -16,7 +16,7 @@
 
 - name: Deploy ServiceAccount
   local_action:
-    module:  k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
@@ -28,7 +28,7 @@
 
 - name: Deploy Custom resource definitions
   local_action:
-    module:  k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
@@ -91,7 +91,7 @@
 
 - name: Deploy Cluster role
   local_action:
-    module:  k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
@@ -219,7 +219,7 @@
 
 - name: Deploy Cluster Role Binding
   local_action:
-    module:  k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
@@ -241,7 +241,7 @@
 
 - name: Deploy Typha service
   local_action:
-    module: k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
@@ -262,7 +262,7 @@
 
 - name: Create K8S Master node dummy objects
   local_action:
-    module: k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
@@ -282,14 +282,14 @@
 
 - name: Deploy Typha service endpoints
   local_action:
-    module: k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition: "{{ lookup('template', 'typha-service-endpoints.yml.j2') }}"
 
 - name: Add each router as BGP endpoint
   local_action:
-    module: k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:
@@ -303,7 +303,7 @@
 
 - name: Add default BGP configuration
   local_action:
-    module: k8s
+    module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
     kubeconfig: "{{ calico_kube_resources_kubeconfig }}"
     definition:

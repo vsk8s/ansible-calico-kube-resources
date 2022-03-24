@@ -8,11 +8,12 @@
     - "{{ groups[kubernetes_ansible_master_group] }}"
 
 - name: Gather router facts
+  when: kubernetes_ansible_router_group is defined
   setup:
-  delegate_to: "{{ item }}"
+  delegate_to: "{{ item|default('') }}"
   delegate_facts: True
   with_items:
-    - "{{ groups[kubernetes_ansible_router_group] }}"
+    - "{{ groups[kubernetes_ansible_router_group]|default([]) }}"
 
 - name: Deploy ServiceAccount
   local_action:
@@ -264,6 +265,7 @@
     definition: "{{ lookup('template', 'typha-service-endpoints.yml.j2') }}"
 
 - name: Add each router as BGP endpoint
+  when: kubernetes_ansible_router_group is defined
   local_action:
     module: kubernetes.core.k8s
     state: "{{ calico_kube_resources_state }}"
@@ -275,7 +277,7 @@
       spec:
         peerIP: "{{ hostvars[item][hostvars[item]['calico_kube_resources_router_interface']]['ipv4']['address'] }}"
         asNumber: "{{ kubernetes_autonomous_system_number }}"
-  with_items: "{{ groups[kubernetes_ansible_router_group] }}"
+  with_items: "{{ groups[kubernetes_ansible_router_group]|default([]) }}"
 
 - name: Add default BGP configuration
   local_action:
